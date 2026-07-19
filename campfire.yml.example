@@ -1,0 +1,12 @@
+# Campfire.fm configuration example
+# Use ~ to refer to your home directory.
+port: 8080
+host: 0.0.0.0
+# Directory that contains the audio files served by the server.
+audioDir: ~/campfire/audio
+# Path to the YAML file containing the collections definition.
+collectionsFile: ~/campfire/collections.yaml
+# Automatically open the browser when the server starts.
+openBrowser: true
+# Logging verbosity for the server process.
+logLevel: info

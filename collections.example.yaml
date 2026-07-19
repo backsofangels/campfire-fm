@@ -1,0 +1,21 @@
+# Campfire.fm collections example
+collections:
+  - id: foresta-oscura
+    # Human-friendly name shown in the UI sidebar.
+    name: Foresta Oscura
+    # Clips included in the collection.
+    clips:
+      - file: uccelli.mp3
+        # Whether the clip should loop when played.
+        loop: true
+        # Volume used only to initialize the UI slider.
+        defaultVolume: 0.7
+      - file: ruscello.ogg
+        loop: true
+        defaultVolume: 0.5
+  - id: taverna
+    name: Taverna
+    clips:
+      - file: musica_liuto.mp3
+        loop: true
+        defaultVolume: 0.8
