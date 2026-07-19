@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { Howl } from 'howler';
 import type { AudioFile, Collection, ClipConfig } from '../../../types';
+import type { Language } from '../lib/i18n';
 
 export interface ClipState {
   fileId: string;
@@ -17,12 +18,14 @@ export interface AppStore {
   activeCollectionId: string | null;
   audioUnlocked: boolean;
   isLoading: boolean;
+  language: Language;
   setCollections: (collections: Collection[]) => void;
   setAudioIndex: (audioIndex: AudioFile[]) => void;
   setClipState: (fileId: string, state: Partial<ClipState>) => void;
   setActiveCollection: (id: string | null) => void;
   setAudioUnlocked: (value: boolean) => void;
   setLoading: (value: boolean) => void;
+  setLanguage: (language: Language) => void;
   initClipStates: (collections: Collection[]) => void;
 }
 
@@ -43,6 +46,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   activeCollectionId: null,
   audioUnlocked: false,
   isLoading: false,
+  language: 'it',
   setCollections: (collections) => set({ collections }),
   setAudioIndex: (audioIndex) => set({ audioIndex }),
   setClipState: (fileId, state) => {
@@ -66,6 +70,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   setActiveCollection: (id) => set({ activeCollectionId: id }),
   setAudioUnlocked: (value) => set({ audioUnlocked: value }),
   setLoading: (value) => set({ isLoading: value }),
+  setLanguage: (language) => set({ language }),
   initClipStates: (collections) => {
     const nextClipStates = new Map(get().clipStates);
 

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { createCollection } from '../lib/api';
+import { useI18n } from '../lib/i18n';
 import { useAppStore } from '../store/useAppStore';
 
 interface NewCollectionModalProps {
@@ -8,6 +9,7 @@ interface NewCollectionModalProps {
 }
 
 export default function NewCollectionModal({ isOpen, onClose }: NewCollectionModalProps): JSX.Element | null {
+  const { t } = useI18n();
   const setLoading = useAppStore((state) => state.setLoading);
   const [name, setName] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -21,7 +23,7 @@ export default function NewCollectionModal({ isOpen, onClose }: NewCollectionMod
     const trimmedName = name.trim();
 
     if (trimmedName === '') {
-      setErrorMessage('Inserisci un nome valido.');
+      setErrorMessage(t.invalidCollectionName);
       return;
     }
 
@@ -34,7 +36,7 @@ export default function NewCollectionModal({ isOpen, onClose }: NewCollectionMod
       setName('');
       onClose();
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Impossibile creare la collezione.';
+      const message = error instanceof Error ? error.message : t.cannotCreateCollection;
       setErrorMessage(message);
     } finally {
       setIsSubmitting(false);
@@ -47,21 +49,21 @@ export default function NewCollectionModal({ isOpen, onClose }: NewCollectionMod
       <div className="w-full max-w-lg rounded-3xl border border-amber-400/20 bg-amber-950 p-6 shadow-2xl shadow-black/50">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-[0.35em] text-amber-300/60">New collection</p>
-            <h2 className="mt-2 text-2xl font-semibold text-amber-50">Crea collezione</h2>
+            <p className="text-xs uppercase tracking-[0.35em] text-amber-300/60">{t.createCollectionTitle}</p>
+            <h2 className="mt-2 text-2xl font-semibold text-amber-50">{t.createCollectionHeading}</h2>
           </div>
 
           <button className="text-sm text-amber-200/60 transition hover:text-amber-100" onClick={onClose} type="button">
-            Chiudi
+            {t.close}
           </button>
         </div>
 
         <label className="mt-6 block text-sm text-amber-100/80">
-          Nome collezione
+          {t.collectionName}
           <input
             className="mt-2 w-full rounded-2xl border border-amber-900/60 bg-slate-950 px-4 py-3 text-amber-50 outline-none ring-0 placeholder:text-amber-100/30 focus:border-amber-400"
             onChange={(event) => setName(event.target.value)}
-            placeholder="Foresta, Taverna, Combattimento..."
+            placeholder={t.collectionPlaceholder}
             type="text"
             value={name}
           />
@@ -75,7 +77,7 @@ export default function NewCollectionModal({ isOpen, onClose }: NewCollectionMod
             onClick={onClose}
             type="button"
           >
-            Annulla
+            {t.cancel}
           </button>
           <button
             className="rounded-full bg-amber-400 px-5 py-2 text-sm font-semibold text-slate-950 transition hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-60"
@@ -85,7 +87,7 @@ export default function NewCollectionModal({ isOpen, onClose }: NewCollectionMod
             }}
             type="button"
           >
-            Crea
+            {t.create}
           </button>
         </div>
       </div>

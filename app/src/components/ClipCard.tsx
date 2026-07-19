@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactElement } from 'react';
 import type { AudioFile, Collection } from '../../../types';
 import type { ClipState } from '../store/useAppStore';
 import { play, setLoop, setVolume, stop } from '../lib/audioEngine';
+import { useI18n } from '../lib/i18n';
 
 interface ClipCardProps {
   audioFile: AudioFile;
@@ -10,6 +11,7 @@ interface ClipCardProps {
   assignedCollectionId: string | null;
   assignedCollectionName: string | null;
   onAssignCollection: (fileName: string, targetCollectionId: string | null) => Promise<void> | void;
+  onDeleteClip: (fileName: string) => Promise<void> | void;
 }
 
 export default function ClipCard({
@@ -18,10 +20,14 @@ export default function ClipCard({
   collections,
   assignedCollectionId,
   assignedCollectionName,
-  onAssignCollection
+  onAssignCollection,
+  onDeleteClip
 }: ClipCardProps): ReactElement {
+  const { t } = useI18n();
   const [localVolume, setLocalVolume] = useState(clipState.volume);
   const [isMoving, setIsMoving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     setLocalVolume(clipState.volume);
@@ -61,6 +67,25 @@ export default function ClipCard({
     }
   };
 
+  const handleDelete = async (): Promise<void> => {
+    const confirmed = window.confirm(t.deleteClipConfirm);
+
+    if (!confirmed) {
+      return;
+    }
+
+    setDeleteError(null);
+    setIsDeleting(true);
+    try {
+      stop(audioFile.id);
+      await onDeleteClip(audioFile.filename);
+    } catch {
+      setDeleteError(t.deleteClipError);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <article
       className={[
@@ -96,7 +121,7 @@ export default function ClipCard({
           onClick={handlePlayToggle}
           type="button"
         >
-          {clipState.playing ? 'Stop' : 'Play'}
+          {clipState.playing ? t.stop : t.play}
         </button>
       </div>
 
@@ -112,11 +137,11 @@ export default function ClipCard({
             onClick={() => setLoop(audioFile.id, !clipState.loop)}
             type="button"
           >
-            🔁 Loop {clipState.loop ? 'on' : 'off'}
+            🔁 {clipState.loop ? t.loopOn : t.loopOff}
           </button>
 
           <label className="flex items-center gap-3 text-xs uppercase tracking-[0.3em] text-amber-200/50 lg:min-w-[16rem] lg:justify-end">
-            <span>Collezione</span>
+            <span>{t.collection}</span>
             <select
               className="w-full rounded-full border border-amber-900/60 bg-stone-950/60 px-3 py-2 text-sm tracking-normal text-amber-50 outline-none transition focus:border-amber-400 lg:max-w-[14rem]"
               disabled={isMoving}
@@ -125,7 +150,7 @@ export default function ClipCard({
               }}
               value={assignedCollectionId ?? ''}
             >
-              <option value="">Libera</option>
+              <option value="">{t.free}</option>
               {collections.map((collection) => (
                 <option key={collection.id} value={collection.id}>
                   {collection.name}
@@ -135,19 +160,34 @@ export default function ClipCard({
           </label>
         </div>
 
-        <div className="flex items-center gap-3">
-          <span className="text-xs uppercase tracking-[0.3em] text-amber-200/50">Volume</span>
-          <input
-            className="campfire-range h-2 w-full cursor-pointer"
-            max="1"
-            min="0"
-            onChange={(event) => setLocalVolume(Number(event.target.value))}
-            step="0.01"
-            type="range"
-            value={localVolume}
-          />
-          <span className="w-10 text-right text-xs text-amber-100/60">{Math.round(localVolume * 100)}%</span>
+        <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-xs uppercase tracking-[0.3em] text-amber-200/50">Volume</span>
+            <input
+              className="campfire-range h-2 w-full cursor-pointer"
+              max="1"
+              min="0"
+              onChange={(event) => setLocalVolume(Number(event.target.value))}
+              step="0.01"
+              type="range"
+              value={localVolume}
+            />
+            <span className="w-10 text-right text-xs text-amber-100/60">{Math.round(localVolume * 100)}%</span>
+          </div>
+
+          <button
+            className="rounded-full border border-red-400/25 bg-red-500/10 px-4 py-2 text-sm font-semibold text-red-100 transition hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={isMoving || isDeleting}
+            onClick={() => {
+              void handleDelete();
+            }}
+            type="button"
+          >
+            🗑 {t.deleteClip}
+          </button>
         </div>
+
+        {deleteError ? <p className="text-sm text-red-200">{deleteError}</p> : null}
       </div>
     </article>
   );

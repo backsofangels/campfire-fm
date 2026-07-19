@@ -4,18 +4,21 @@ import type { ClipState } from '../store/useAppStore';
 import { stop, play } from '../lib/audioEngine';
 import { updateCollection } from '../lib/api';
 import { useAppStore } from '../store/useAppStore';
+import { useI18n } from '../lib/i18n';
 
 interface CollectionPanelProps {
   collection: Collection | null;
   collections: Collection[];
   audioIndex: AudioFile[];
   clipStates: Map<string, ClipState>;
+  onDeleteClip: (fileName: string) => Promise<void>;
 }
 
-export default function CollectionPanel({ collection, collections, audioIndex, clipStates }: CollectionPanelProps): JSX.Element {
+export default function CollectionPanel({ collection, collections, audioIndex, clipStates, onDeleteClip }: CollectionPanelProps): JSX.Element {
+  const { t } = useI18n();
   const clips = collection ? collection.clips : [];
   const panelAudioFiles = collection ? clips.map((clip) => resolveAudioFile(clip.file, audioIndex)) : audioIndex;
-  const title = collection?.name ?? 'Tutte le clip';
+  const title = collection?.name ?? t.allClips;
   const setCollections = useAppStore((state) => state.setCollections);
   const initClipStates = useAppStore((state) => state.initClipStates);
 
@@ -94,10 +97,10 @@ export default function CollectionPanel({ collection, collections, audioIndex, c
     <section className="flex flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-4 rounded-[2rem] border border-amber-400/10 bg-stone-950/35 px-5 py-5 shadow-lg shadow-black/10 backdrop-blur-xl sm:px-6">
         <div>
-          <p className="text-xs uppercase tracking-[0.35em] text-amber-300/60">Collection panel</p>
+          <p className="text-xs uppercase tracking-[0.35em] text-amber-300/60">{t.collectionPanel}</p>
           <h2 className="mt-2 text-3xl font-semibold text-amber-50 sm:text-4xl">{title}</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-amber-100/65">
-            {collection ? 'Riproduci tutta la scena o bilancia rapidamente i singoli strati.' : 'Tutte le clip disponibili in libreria, pronte per il tavolo.'}
+            {collection ? t.collectionPanelSingleDescription : t.collectionPanelAllDescription}
           </p>
         </div>
 
@@ -107,21 +110,21 @@ export default function CollectionPanel({ collection, collections, audioIndex, c
             onClick={handlePlayAll}
             type="button"
           >
-            ▶ Play All
+            ▶ {t.playAll}
           </button>
           <button
             className="rounded-full border border-red-400/30 bg-red-500/10 px-5 py-2 text-sm font-semibold text-red-100 transition hover:bg-red-500/20"
             onClick={handleStopAll}
             type="button"
           >
-            ⏹ Stop All
+            ⏹ {t.stopAll}
           </button>
         </div>
       </div>
 
       {panelAudioFiles.length === 0 ? (
         <div className="rounded-[2rem] border border-dashed border-amber-900/80 bg-stone-950/35 px-8 py-14 text-center text-amber-100/70 shadow-lg shadow-black/10 backdrop-blur-xl">
-          Nessuna clip disponibile. Carica dei file audio per iniziare.
+          {collection ? t.noCollectionClips : t.noClips}
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3">
@@ -143,6 +146,7 @@ export default function CollectionPanel({ collection, collections, audioIndex, c
                 clipState={clipState}
                 collections={collections}
                 onAssignCollection={handleAssignCollection}
+                onDeleteClip={onDeleteClip}
               />
             );
           })}

@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { uploadAudio } from '../lib/api';
+import { useI18n } from '../lib/i18n';
 import { useAppStore } from '../store/useAppStore';
 
 interface UploadItem {
@@ -8,6 +9,7 @@ interface UploadItem {
 }
 
 export default function AudioUpload(): JSX.Element {
+  const { t } = useI18n();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const setLoading = useAppStore((state) => state.setLoading);
   const [uploads, setUploads] = useState<UploadItem[]>([]);
@@ -32,7 +34,7 @@ export default function AudioUpload(): JSX.Element {
         });
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Impossibile caricare il file audio.';
+      const message = error instanceof Error ? error.message : t.uploadError;
       setErrorMessage(message);
     } finally {
       setUploads([]);
@@ -50,7 +52,7 @@ export default function AudioUpload(): JSX.Element {
         onClick={() => inputRef.current?.click()}
         type="button"
       >
-        Carica audio
+        {t.uploadAudio}
       </button>
 
       <input

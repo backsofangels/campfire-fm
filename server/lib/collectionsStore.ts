@@ -50,6 +50,20 @@ export async function writeCollections(data: CollectionsFile): Promise<void> {
   }
 }
 
+/**
+ * Removes all clips that reference the provided audio file name from every collection.
+ */
+export async function removeClipReferences(fileName: string): Promise<void> {
+  const collectionsFile = await readCollections();
+  const normalizedFileName = normalizeClipFileName(fileName);
+  const nextCollections = collectionsFile.collections.map((collection) => ({
+    ...collection,
+    clips: collection.clips.filter((clip) => normalizeClipFileName(clip.file) !== normalizedFileName)
+  }));
+
+  await writeCollections({ collections: nextCollections });
+}
+
 function logCollectionsError(action: 'read' | 'write', error: unknown): void {
   const message = error instanceof Error ? error.message : String(error);
   console.error(`Failed to ${action} collections file ${collectionsFilePath}: ${message}`);
@@ -62,4 +76,8 @@ function isCollection(value: unknown): value is Collection {
 
   const collection = value as Partial<Collection>;
   return typeof collection.id === 'string' && typeof collection.name === 'string' && Array.isArray(collection.clips);
+}
+
+function normalizeClipFileName(fileName: string): string {
+  return path.basename(fileName);
 }

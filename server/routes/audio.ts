@@ -1,9 +1,10 @@
-import { mkdir, readdir } from 'node:fs/promises';
+import { unlink, mkdir, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import type { Request, Response } from 'express';
 import { Router } from 'express';
 import multer from 'multer';
 import type { Config } from '../lib/config';
+import { removeClipReferences } from '../lib/collectionsStore';
 
 const SUPPORTED_AUDIO_EXTENSIONS = new Set(['.mp3', '.ogg', '.wav', '.flac', '.m4a']);
 const MAX_UPLOAD_SIZE_BYTES = 100 * 1024 * 1024;
@@ -43,6 +44,29 @@ export function createAudioRouter(config: Config): Router {
       const audioFile = buildAudioFile(uploadedFile.originalname);
       response.status(201).json(audioFile);
     });
+  });
+
+  router.delete('/:filename', async (request: Request, response: Response) => {
+    const filename = sanitizeAudioFilename(request.params.filename);
+
+    if (filename === null) {
+      response.status(400).json({ error: 'Invalid audio filename.' });
+      return;
+    }
+
+    try {
+      await unlink(path.join(config.audioDir, filename));
+      await removeClipReferences(filename);
+      response.status(204).send();
+    } catch (error) {
+      if (isFileNotFoundError(error)) {
+        response.status(404).json({ error: 'Audio file not found.' });
+        return;
+      }
+
+      const message = error instanceof Error ? error.message : String(error);
+      response.status(500).json({ error: message });
+    }
   });
 
   return router;
@@ -107,4 +131,17 @@ function buildAudioFile(filename: string) {
     filename,
     url: `/audio/${filename}`
   };
+}
+
+function sanitizeAudioFilename(rawFilename: string): string | null {
+  const filename = path.basename(decodeURIComponent(rawFilename));
+  if (filename.trim() === '' || filename.includes('..')) {
+    return null;
+  }
+
+  return filename;
+}
+
+function isFileNotFoundError(error: unknown): boolean {
+  return error instanceof Error && 'code' in error && (error as NodeJS.ErrnoException).code === 'ENOENT';
 }

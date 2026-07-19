@@ -71,6 +71,19 @@ export async function deleteCollection(id: string): Promise<void> {
 }
 
 /**
+ * Deletes an audio file from the local server.
+ */
+export async function deleteAudio(filename: string): Promise<void> {
+  const response = await fetch(`${BASE}/api/audio/${encodeURIComponent(filename)}`, {
+    method: 'DELETE'
+  });
+
+  if (!response.ok) {
+    await parseResponse<unknown>(response);
+  }
+}
+
+/**
  * Uploads a file to the local server and reports upload progress when available.
  */
 export function uploadAudio(file: File, onProgress?: (pct: number) => void): Promise<AudioFile> {
