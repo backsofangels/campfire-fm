@@ -11,7 +11,7 @@ Campfire.fm is a browser-based soundboard for tabletop RPG sessions. It runs loc
 ## Install
 
 ```bash
-git clone <repo-url>
+git clone [<repo-url>](https://github.com/backsofangels/campfire-fm.git)
 cd campfire-fm
 npm install
 ```
