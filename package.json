@@ -1,0 +1,15 @@
+{
+  "name": "campfire-fm",
+  "private": true,
+  "workspaces": [
+    "app",
+    "server"
+  ],
+  "scripts": {
+    "dev": "echo \"dev not configured yet\"",
+    "build": "echo \"build not configured yet\"",
+    "start": "echo \"start not configured yet\"",
+    "typecheck": "echo \"typecheck not configured yet\"",
+    "lint": "echo \"lint not configured yet\""
+  }
+}
